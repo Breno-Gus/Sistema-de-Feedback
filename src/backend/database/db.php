@@ -9,7 +9,6 @@ try {
 } catch (PDOException $e) {
     die("Erro na conexão: " . $e->getMessage());
 }
-// Função para executar consultas SQL
 function executarConsulta($sql, $params = []) { 
     global $pdo;
     try {

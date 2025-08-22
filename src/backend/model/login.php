@@ -1,5 +1,7 @@
 <?php
+session_start();
 include_once __DIR__ . '/../../backend/database/db.php';
+include_once __DIR__ . '/sessao.php';
 
 try {
     $email = $_POST['email'] ?? '';
@@ -10,7 +12,6 @@ try {
         exit;
     }
 
-    // Buscar usuário
     $stmt = executarConsulta("
         SELECT u.id_usuario, u.nome, c.senha_hash
         FROM usuarios u
@@ -25,32 +26,16 @@ try {
         exit;
     }
 
-    // Criar token
-    $token = bin2hex(random_bytes(32));
-    $expiracao = date("Y-m-d H:i:s", strtotime("+1 hour"));
-
-    // Registrar sessão
-    executarConsulta("INSERT INTO sessoes (id_usuario, token, expiracao) VALUES (?, ?, ?)", [
-        $usuario['id_usuario'], $token, $expiracao
-    ]);
+    // Criar sessão imediata
+    criarSessao($usuario['id_usuario'], $usuario['nome'], $email);
 
     // Atualizar último login
-    executarConsulta("UPDATE credenciais SET ultimo_login = NOW() WHERE id_usuario = ?", [
-        $usuario['id_usuario']
-    ]);
+    executarConsulta("UPDATE credenciais SET ultimo_login = NOW() WHERE id_usuario = ?", [$usuario['id_usuario']]);
 
-    echo json_encode([
-        "sucesso" => true,
-        "usuario" => [
-            "id" => $usuario['id_usuario'],
-            "nome" => $usuario['nome']
-        ],
-        "token" => $token,
-        "expira_em" => $expiracao
-    ]);
+    // Redireciona para index.php
+    header("Location: ../../index.php");
+    exit;
 
 } catch (PDOException $e) {
     echo json_encode(["erro" => $e->getMessage()]);
 }
-
-?>
