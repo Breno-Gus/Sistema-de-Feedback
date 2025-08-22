@@ -1,5 +1,5 @@
 <?php
-include_once '../backend/database/db.php';
+include_once __DIR__ . '/../../backend/database/db.php';
 
 try {
     $nome  = $_POST['nome'] ?? '';
