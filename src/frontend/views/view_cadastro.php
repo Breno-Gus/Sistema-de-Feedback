@@ -9,7 +9,7 @@
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
   <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
     <h2 class="text-2xl font-bold text-blue-600 mb-6">Cadastro</h2>
-    <form action="../../backend/model/cadastro.php" method="POST" class="space-y-4">
+    <form id="formRegistro" action="../../backend/model/cadastro.php" method="POST" class="space-y-4">
       <div>
         <label for="nome" class="block text-sm font-medium text-gray-700">Nome</label>
         <input type="text" id="nome" name="nome" required
@@ -33,4 +33,6 @@
     </p>
   </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="errors/error.js"></script>
 </html>
