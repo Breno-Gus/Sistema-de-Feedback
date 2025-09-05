@@ -1,12 +1,14 @@
 <?php
+session_start(); // 🔹 essencial para manipular a sessão
 include_once __DIR__ . '/../../backend/model/sessao.php';
 
 try {
-    encerrarSessao();
+    encerrarSessao(); // 🔹 remove do PHP e do banco
 } catch (Exception $e) {
-    // Log do erro opcional: error_log($e->getMessage());
-    // Podemos mostrar uma mensagem ou apenas redirecionar mesmo
+    error_log("Erro ao encerrar sessão: " . $e->getMessage());
+    // opcional: podemos mostrar uma mensagem, mas aqui só redirecionamos
 }
 
+// Redireciona para a página inicial
 header("Location: ../../index.php");
 exit;

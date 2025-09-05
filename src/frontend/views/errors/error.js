@@ -59,7 +59,7 @@ async function enviarFormulario(formId, urlDestino) {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = "../../index.php";
+                        window.location.href = "../../frontend/views/painel.php";
                     });
                     break;
 
@@ -78,7 +78,13 @@ async function enviarFormulario(formId, urlDestino) {
                         text: "Ocorreu um erro no servidor. Você foi desconectado por segurança."
                     });
                     break;
-
+                case "EMAIL_DUPLICADO":
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Atenção",
+                        text: resultado.mensagem
+                    });
+                    break;
                 default:
                     Swal.fire({
                         icon: "error",

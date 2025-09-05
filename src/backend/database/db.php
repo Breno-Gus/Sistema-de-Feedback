@@ -9,13 +9,14 @@ try {
 } catch (PDOException $e) {
     die("Erro na conexão: " . $e->getMessage());
 }
-function executarConsulta($sql, $params = []) { 
+function executarConsulta($sql, $params = [])
+{
     global $pdo;
     try {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt;
     } catch (PDOException $e) {
-        die("Erro na consulta: " . $e->getMessage());
+        throw $e;
     }
 }

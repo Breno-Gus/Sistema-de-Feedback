@@ -3,12 +3,17 @@ session_start();
 include_once __DIR__ . '/../../backend/database/db.php';
 include_once __DIR__ . '/sessao.php';
 
+header('Content-Type: application/json; charset=utf-8');
+
 try {
-    $email = $_POST['email'] ?? '';
+    $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
 
     if (empty($email) || empty($senha)) {
-        echo json_encode(["erro" => "Preencha todos os campos"]);
+        echo json_encode([
+            "codigo" => "CAMPOS_VAZIOS",
+            "mensagem" => "Preencha todos os campos."
+        ]);
         exit;
     }
 
@@ -22,20 +27,36 @@ try {
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$usuario || !password_verify($senha, $usuario['senha_hash'])) {
-        echo json_encode(["erro" => "Email ou senha inválidos"]);
+        echo json_encode([
+            "codigo" => "LOGIN_INVALIDO",
+            "mensagem" => "Email ou senha inválidos."
+        ]);
         exit;
     }
 
-    // Criar sessão imediata
+    // 🔹 Cria sessão no PHP e no banco
     criarSessao($usuario['id_usuario'], $usuario['nome'], $email);
 
-    // Atualizar último login
+    // 🔹 Atualiza último login
     executarConsulta("UPDATE credenciais SET ultimo_login = NOW() WHERE id_usuario = ?", [$usuario['id_usuario']]);
 
-    // Redireciona para index.php
-    header("Location: ../../index.php");
+    // 🔹 Retorna JSON de sucesso
+    echo json_encode([
+        "codigo" => "SUCESSO",
+        "mensagem" => "Login realizado com sucesso!"
+    ]);
     exit;
 
 } catch (PDOException $e) {
-    echo json_encode(["erro" => $e->getMessage()]);
+    error_log("Erro PDO (login): " . $e->getMessage());
+    echo json_encode([
+        "codigo" => "ERRO_SERVIDOR",
+        "mensagem" => "Erro interno no servidor."
+    ]);
+} catch (Exception $e) {
+    error_log("Erro geral (login): " . $e->getMessage());
+    echo json_encode([
+        "codigo" => "ERRO_INESPERADO",
+        "mensagem" => "Erro inesperado."
+    ]);
 }
