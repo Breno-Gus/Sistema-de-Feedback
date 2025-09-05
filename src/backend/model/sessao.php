@@ -1,6 +1,6 @@
 <?php
 include_once __DIR__ . '/../database/db.php';
-
+date_default_timezone_set('America/Sao_Paulo');
 /**
  * Cria uma sessão para o usuário no PHP e no banco
  */

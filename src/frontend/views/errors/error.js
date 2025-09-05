@@ -59,7 +59,7 @@ async function enviarFormulario(formId, urlDestino) {
                         timer: 2000,
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = "../../frontend/views/painel.php";
+                        window.location.href = "../../frontend/views/view_painel.php";
                     });
                     break;
 

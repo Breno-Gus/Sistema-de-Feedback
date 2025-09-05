@@ -1,7 +1,7 @@
 <?php
 $dsn = "mysql:host=localhost;dbname=FeedbackEmpresas;charset=utf8mb4";
 $user = "root";
-$pass = "";
+$pass = "vini9000santana@";
 
 try {
     $pdo = new PDO($dsn, $user, $pass);
