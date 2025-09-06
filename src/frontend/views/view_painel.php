@@ -21,6 +21,18 @@ $outrosCategoria = executarConsulta("
     FROM categorias_avaliacao 
     WHERE nome_categoria = 'Outros'
 ")->fetch(PDO::FETCH_ASSOC);
+
+// Buscar avaliações do usuário (se logado)
+$avaliacoesUsuario = [];
+if ($logado) {
+    $avaliacoesUsuario = executarConsulta("
+        SELECT a.id_avaliacao, c.nome_categoria, a.conteudo, a.nota, a.data_avaliacao
+        FROM avaliacoes a
+        JOIN categorias_avaliacao c ON a.id_categoria = c.id_categoria
+        WHERE a.id_usuario = ?
+        ORDER BY a.data_avaliacao DESC
+    ", [$idUsuario])->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -34,7 +46,7 @@ $outrosCategoria = executarConsulta("
 <body class="bg-gradient-to-br from-blue-100 to-green-100 min-h-screen flex items-center justify-center p-6">
 
 <div class="max-w-3xl w-full bg-white rounded-3xl shadow-2xl p-10 space-y-6 border border-gray-200">
-  
+
   <!-- Título -->
   <h1 class="text-4xl font-extrabold text-gray-800 text-center mb-2 drop-shadow-sm">
     Avaliação <?= $logado ? '' : '(Anônima)' ?>
@@ -54,9 +66,8 @@ $outrosCategoria = executarConsulta("
     Obrigado por participar! Sua opinião é muito importante.
   </p>
 
-  <!-- Formulário -->
+  <!-- Formulário de Avaliação -->
   <form id="formAvaliacao" class="space-y-5">
-    
     <!-- Categoria -->
     <div class="flex flex-col">
       <label class="text-gray-700 font-semibold mb-2">Categoria da avaliação</label>
@@ -100,8 +111,37 @@ $outrosCategoria = executarConsulta("
     <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-green-400 text-white font-bold py-3 rounded-2xl shadow-lg hover:scale-105 transform transition-all">
       Enviar Avaliação
     </button>
-
   </form>
+
+<?php if ($logado): ?>
+  <!-- Dropdown Minhas Avaliações -->
+  <h1 id="toggleAvaliacoes" class="flex justify-between items-center cursor-pointer text-2xl font-bold text-black mt-6 hover:text-gray-800 transition">
+      Minhas Avaliações
+      <span id="iconSeta" class="text-xl">▼</span>
+  </h1>
+
+  <div id="listaAvaliacoes" class="mt-4 hidden space-y-3">
+      <?php if (empty($avaliacoesUsuario)): ?>
+          <p class="text-gray-600">Você ainda não possui avaliações.</p>
+      <?php else: ?>
+          <?php foreach($avaliacoesUsuario as $av): ?>
+              <div class="border border-gray-300 rounded-xl p-4 flex justify-between items-start bg-gray-50">
+                  <div>
+                      <p class="font-semibold"><?= htmlspecialchars($av['nome_categoria']) ?> - Nota: <?= $av['nota'] ?></p>
+                      <p class="text-gray-700"><?= htmlspecialchars($av['conteudo']) ?></p>
+                      <p class="text-gray-400 text-sm"><?= date('d/m/Y H:i', strtotime($av['data_avaliacao'])) ?></p>
+                  </div>
+                  <div class="flex flex-col gap-2 ml-4">
+                      <button class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition" onclick="editarAvaliacao(<?= $av['id_avaliacao'] ?>)">Editar</button>
+                      <button class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition" onclick="removerAvaliacao(<?= $av['id_avaliacao'] ?>)">Remover</button>
+                  </div>
+              </div>
+          <?php endforeach; ?>
+      <?php endif; ?>
+  </div>
+<?php endif; ?>
+
+
 </div>
 
 <script>
@@ -145,6 +185,26 @@ form.addEventListener('submit', async (e) => {
     console.error(erro);
   }
 });
+
+// Dropdown Avaliações
+const toggle = document.getElementById('toggleAvaliacoes');
+const lista = document.getElementById('listaAvaliacoes');
+const seta = document.getElementById('iconSeta');
+
+toggle.addEventListener('click', () => {
+    lista.classList.toggle('hidden');
+    seta.textContent = lista.classList.contains('hidden') ? '▼' : '▲';
+});
+
+// Funções exemplo para editar/remover (implemente AJAX real)
+function editarAvaliacao(id) {
+    alert("Função de editar avaliação #" + id);
+}
+function removerAvaliacao(id) {
+    if(confirm("Deseja realmente remover esta avaliação?")) {
+        alert("Função de remover avaliação #" + id);
+    }
+}
 </script>
 </body>
 </html>

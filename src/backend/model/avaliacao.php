@@ -12,6 +12,9 @@ try {
 
     // Usuário logado ou anônimo
     $usuarioId = verificarSessao() ? $_SESSION['usuario']['id'] : null;
+    $anonima = $usuarioId ? 0 : 1;
+    $ipUsuario = $_SERVER['REMOTE_ADDR'];
+    $ipHash = $anonima ? hash('sha256', $ipUsuario) : $ipUsuario;
 
     // Validações
     if (!$id_categoria || !is_numeric($id_categoria)) {
@@ -22,7 +25,6 @@ try {
         exit;
     }
 
-    // Verifica se categoria existe
     $categoriaExistente = executarConsulta(
         "SELECT COUNT(*) FROM categorias_avaliacao WHERE id_categoria = ?",
         [$id_categoria]
@@ -36,7 +38,7 @@ try {
         exit;
     }
 
-    if (!in_array($nota, ['1', '2', '3', '4', '5'])) {
+    if (!in_array($nota, ['1','2','3','4','5'])) {
         echo json_encode([
             "codigo" => "NOTA_INVALIDA",
             "mensagem" => "Escolha uma nota válida de 1 a 5."
@@ -48,16 +50,33 @@ try {
         $comentario = 'Sem comentário';
     }
 
-    // Insere avaliação
+    // Limite 1 avaliação por IP/dia apenas para anônimos
+    if ($anonima) {
+        $hoje = date('Y-m-d');
+        $verifica = executarConsulta(
+            "SELECT COUNT(*) FROM avaliacoes WHERE ip_usuario = ? AND DATE(data_avaliacao) = ?",
+            [$ipHash, $hoje]
+        )->fetchColumn();
+
+        if ($verifica > 0) {
+            echo json_encode([
+                "codigo" => "AVALIACAO_DUPLICADA",
+                "mensagem" => "Você só pode enviar uma avaliação por dia."
+            ]);
+            exit;
+        }
+    }
+
+    // Inserir avaliação
     executarConsulta("
-        INSERT INTO avaliacoes (id_usuario, id_categoria, conteudo, nota, data_avaliacao)
-        VALUES (?, ?, ?, ?, NOW())
-    ", [$usuarioId, $id_categoria, $comentario, $nota]);
+        INSERT INTO avaliacoes (id_usuario, id_categoria, conteudo, nota, anonima, ip_usuario, data_avaliacao)
+        VALUES (?, ?, ?, ?, ?, ?, NOW())
+    ", [$usuarioId, $id_categoria, $comentario, $nota, $anonima, $ipHash]);
 
-
+    // Mensagem diferenciada para anônimos
     echo json_encode([
         "codigo" => "SUCESSO",
-        "mensagem" => "Sua avaliação foi registrada com sucesso!"
+        "mensagem" => $anonima ? "Avaliação enviada!" : "Sua avaliação foi registrada com sucesso!"
     ]);
 
 } catch (PDOException $e) {

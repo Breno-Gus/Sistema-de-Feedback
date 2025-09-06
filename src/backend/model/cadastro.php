@@ -8,6 +8,17 @@ try {
     $nome  = trim($_POST['nome'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
+    $tipoUsuario = intval($_POST['tipo_usuario'] ?? 0);
+    $cnpj = trim($_POST['cnpj'] ?? null);
+
+    if ($tipoUsuario <= 0) {
+        echo json_encode([
+            "codigo" => "TIPO_INVALIDO",
+            "mensagem" => "Selecione um tipo de usuário válido."
+        ]);
+        exit;
+    }
+
 
     // 🔹 Validações
     if (empty($nome) || empty($email) || empty($senha)) {
@@ -26,18 +37,27 @@ try {
         exit;
     }
 
-    if (strlen($senha) < 6) {
+    if (strlen($senha) < 8) {
         echo json_encode([
             "codigo" => "SENHA_FRACA",
-            "mensagem" => "A senha deve ter pelo menos 6 caracteres."
+            "mensagem" => "A senha deve ter pelo menos 8 caracteres."
         ]);
         exit;
     }
 
+    if (!preg_match('/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/', $senha)) {
+        echo json_encode([
+            "codigo" => "SENHA_FRACA",
+            "mensagem" => "A senha deve ter pelo menos 8 caracteres, incluindo letra maiúscula, número e símbolo."
+        ]);
+        exit;
+    }
+
+
     $senhaHash = password_hash($senha, PASSWORD_BCRYPT);
 
     // 🔹 Insere usuário
-    executarConsulta("INSERT INTO usuarios (nome, email) VALUES (?, ?)", [$nome, $email]);
+    executarConsulta("INSERT INTO usuarios (nome, email, id_tipo, cnpj) VALUES (?, ?, ?, ?)", [$nome, $email, $tipoUsuario, $cnpj ?: null]);
 
     global $pdo;
     $idUsuario = $pdo->lastInsertId();
