@@ -36,7 +36,7 @@ if (verificarSessao()) {
       <div class="flex flex-col md:flex-row gap-6 justify-center mt-6">
         <a href="frontend/views/view_cadastro.php" 
            class="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 transition">
-          Cadastrar
+          Cadastrar 
         </a>
         <a href="frontend/views/view_login.php" 
            class="w-full md:w-auto px-8 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-lg hover:bg-green-700 transition">

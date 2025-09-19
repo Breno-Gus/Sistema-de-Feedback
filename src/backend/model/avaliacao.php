@@ -13,8 +13,10 @@ try {
     // Usuário logado ou anônimo
     $usuarioId = verificarSessao() ? $_SESSION['usuario']['id'] : null;
     $anonima = $usuarioId ? 0 : 1;
-    $ipUsuario = $_SERVER['REMOTE_ADDR'];
-    $ipHash = $anonima ? hash('sha256', $ipUsuario) : $ipUsuario;
+
+    // sempre gerar hash do IP, nunca salvar o IP real
+    $ipUsuario = $_SERVER['REMOTE_ADDR'] ?? '';
+    $ipHash = hash('sha256', $ipUsuario);
 
     // Validações
     if (!$id_categoria || !is_numeric($id_categoria)) {
@@ -50,7 +52,7 @@ try {
         $comentario = 'Sem comentário';
     }
 
-    // Limite 1 avaliação por IP/dia apenas para anônimos
+    // Limite 1 avaliação por hash/IP/dia apenas para anônimos
     if ($anonima) {
         $hoje = date('Y-m-d');
         $verifica = executarConsulta(

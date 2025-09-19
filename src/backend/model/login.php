@@ -5,6 +5,10 @@ include_once __DIR__ . '/sessao.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
+if (!verificarTokenCSRF($_POST['csrf_token'] ?? '')) {
+    die("CSRF token inválido!");
+}
+
 try {
     $email = trim($_POST['email'] ?? '');
     $senha = $_POST['senha'] ?? '';
@@ -13,6 +17,14 @@ try {
         echo json_encode([
             "codigo" => "CAMPOS_VAZIOS",
             "mensagem" => "Preencha todos os campos."
+        ]);
+        exit;
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode([
+            "codigo" => "EMAIL_INVALIDO",
+            "mensagem" => "Formato de email inválido."
         ]);
         exit;
     }

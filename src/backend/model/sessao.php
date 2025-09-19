@@ -5,6 +5,7 @@ date_default_timezone_set('America/Sao_Paulo');
  * Cria uma sessão para o usuário no PHP e no banco
  */
 function criarSessao($usuarioId, $nome, $email) {
+    session_regenerate_id(true);
     $token = bin2hex(random_bytes(32));
     $expiracao = date("Y-m-d H:i:s", strtotime("+30 minutes"));
 
@@ -19,6 +20,7 @@ function criarSessao($usuarioId, $nome, $email) {
         "nome" => $nome,
         "email" => $email
     ];
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     $_SESSION['expira'] = time() + (30 * 60);
     $_SESSION['token'] = $token;
 }
@@ -61,3 +63,15 @@ function encerrarSessao() {
     session_unset();
     session_destroy();
 }
+
+function gerarTokenCSRF() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function verificarTokenCSRF($token) {
+    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+}
+

@@ -206,5 +206,26 @@ function removerAvaliacao(id) {
     }
 }
 </script>
+<?php if ($logado && isset($_SESSION['expira'])): ?>
+<script>
+  const expiraEm = <?= json_encode($_SESSION['expira']) ?>; // timestamp em segundos
+  const agora = Math.floor(Date.now() / 1000);
+  const tempoRestante = expiraEm - agora;
+
+  if (tempoRestante > 0) {
+    setTimeout(() => {
+      Swal.fire({
+        icon: "warning",
+        title: "Sessão expirada",
+        text: "Sua sessão expirou. Você será redirecionado para a home.",
+        timer: 4000,
+        showConfirmButton: false
+      }).then(() => {
+        window.location.href = "/Sistema-de-Feedback/src";
+      });
+    }, tempoRestante * 1000);
+  }
+</script>
+<?php endif; ?>
 </body>
 </html>

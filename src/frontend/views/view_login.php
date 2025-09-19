@@ -1,3 +1,9 @@
+<?php
+session_start();
+include_once __DIR__ . '/../../backend/model/sessao.php'; // ajuste o caminho correto
+?>
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -10,6 +16,8 @@
   <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
     <h2 class="text-2xl font-bold text-green-600 mb-6">Login</h2>
     <form id="formLogin" action="../../backend/model/login.php" method="POST" class="space-y-4">
+      <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(gerarTokenCSRF()); ?>">
+
       <div>
         <label for="emailLogin" class="block text-sm font-medium text-gray-700">Email</label>
         <input type="email" id="emailLogin" name="email" required
@@ -29,5 +37,7 @@
   </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../js/login.js"></script>
 <script src="errors/error.js"></script>
+
 </html>
