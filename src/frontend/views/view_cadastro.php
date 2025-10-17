@@ -65,6 +65,6 @@
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../js/cadastro.js"></script>
-<script src="errors/error.js"></script>
+<script src="errors/errorCadastro .js"></script>
 
 </html>

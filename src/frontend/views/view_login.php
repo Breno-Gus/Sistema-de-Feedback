@@ -27,6 +27,7 @@ include_once __DIR__ . '/../../backend/model/sessao.php'; // ajuste o caminho co
         <label for="senhaLogin" class="block text-sm font-medium text-gray-700">Senha</label>
         <input type="password" id="senhaLogin" name="senha" required
           class="mt-1 w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+        <p id="senhaError" class="text-red-600 text-sm mt-1 hidden"></p>
       </div>
       <button type="submit"
         class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition">Entrar</button>
@@ -38,6 +39,6 @@ include_once __DIR__ . '/../../backend/model/sessao.php'; // ajuste o caminho co
 </body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../js/login.js"></script>
-<script src="errors/error.js"></script>
+<script src="errors/errorLogin.js"></script>
 
 </html>
