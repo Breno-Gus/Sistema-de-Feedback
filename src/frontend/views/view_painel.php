@@ -3,6 +3,9 @@ session_start();
 include_once __DIR__ . '/../../backend/model/sessao.php';
 include_once __DIR__ . '/../../backend/database/db.php';
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 $logado = verificarSessao();
 $idUsuario = $logado ? $_SESSION['usuario']['id'] : null;
 $nomeUsuario = $logado ? $_SESSION['usuario']['nome'] : 'Anônimo';
@@ -33,6 +36,39 @@ if ($logado) {
         ORDER BY a.data_avaliacao DESC
     ", [$idUsuario])->fetchAll(PDO::FETCH_ASSOC);
 }
+
+// Pegar página atual (por GET, padrão 1)
+$pagina = isset($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
+$limite = 4; // quantas avaliações por página
+$offset = ($pagina - 1) * $limite;
+
+//contando quantos tem, excluindo o que ta logado
+$totalAvaliacoes = executarConsulta("
+    SELECT COUNT(*) AS total 
+    FROM avaliacoes a
+    " . ($logado ? "WHERE a.id_usuario <> $idUsuario" : "")
+)->fetch(PDO::FETCH_ASSOC)['total'];
+
+$totalPaginas = ceil($totalAvaliacoes / $limite);
+
+$condicaoUsuario = $logado ? "WHERE a.id_usuario <> $idUsuario" : "";
+//busca todas as avaliações mas limitando pro server nn cair
+$todasAvaliacoes = executarConsulta("
+    SELECT a.id_avaliacao, 
+           c.nome_categoria, 
+           a.conteudo, 
+           a.nota, 
+           a.data_avaliacao, 
+           u.nome AS nome_usuario
+    FROM avaliacoes a
+    JOIN categorias_avaliacao c ON a.id_categoria = c.id_categoria
+    LEFT JOIN usuarios u ON a.id_usuario = u.id_usuario
+    $condicaoUsuario
+    ORDER BY a.data_avaliacao DESC
+    LIMIT $limite OFFSET $offset
+")->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -43,7 +79,8 @@ if ($logado) {
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-100 to-green-100 min-h-screen flex items-center justify-center p-6">
+<body class="bg-gradient-to-br from-blue-100 to-green-100 min-h-screen flex flex-col md:flex-row items-center justify-center p-6 gap-8">
+
 
 <div class="max-w-3xl w-full bg-white rounded-3xl shadow-2xl p-10 space-y-6 border border-gray-200">
 
@@ -142,6 +179,62 @@ if ($logado) {
 <?php endif; ?>
 
 
+</div>
+
+<!-- BLOCO QUE MOSTRA AS AVALIAÇÕES DO SITE-->
+<div class="max-w-3xl w-full bg-white rounded-3xl shadow-2xl p-10 space-y-6 border border-gray-200">
+  <h2 class="text-3xl font-extrabold text-gray-800 text-center mb-4 drop-shadow-sm">
+    Todas as Avaliações
+  </h2>
+
+  <div id="todasAvaliacoes" class="space-y-4 h-[550px] overflow-y-auto pr-2">
+    <?php if (empty($todasAvaliacoes)): ?>
+      <p class="text-gray-600 text-center">Nenhuma avaliação encontrada.</p>
+    <?php else: ?>
+      <?php foreach ($todasAvaliacoes as $av): ?>
+        <div class="border border-gray-300 rounded-xl p-4 bg-gray-50 shadow-sm hover:shadow-md transition">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-semibold text-lg text-gray-800">
+                <?= htmlspecialchars($av['nome_categoria']) ?> - 
+                <span class="text-yellow-500">★ <?= $av['nota'] ?></span>
+              </p>
+              <p class="text-gray-700 mt-1"><?= htmlspecialchars($av['conteudo']) ?></p>
+              <p class="text-gray-500 text-sm mt-1">
+                Por: <?= htmlspecialchars($av['nome_usuario'] ?? 'Anônimo') ?> |
+                <?= date('d/m/Y H:i', strtotime($av['data_avaliacao'])) ?>
+              </p>
+            </div>
+
+            <?php if ($logado): ?>
+              <button 
+                class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                onclick="denunciarAvaliacao(<?= $av['id_avaliacao'] ?>)"
+              >
+                Denunciar
+              </button>
+            <?php endif; ?>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+  </div>
+  <?php if ($totalPaginas > 1): ?>
+    <div class="flex justify-center items-center mt-4 space-x-2">
+      <!-- seta voltar -->
+      <a href="?pagina=<?= max(1, $pagina-1) ?>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt;</a>
+
+      <?php for($p=1; $p <= $totalPaginas; $p++): ?>
+        <a href="?pagina=<?= $p ?>" class="px-3 py-1 rounded <?= $p == $pagina ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300' ?>">
+          <?= $p ?>
+        </a>
+      <?php endfor; ?>
+
+      <!-- seta avançar -->
+      <a href="?pagina=<?= min($totalPaginas, $pagina+1) ?>" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&gt;</a>
+    </div>
+  <?php endif; ?>
+  <!-- quero adicionar aqui uma paginação, entao seria tipo uma seta o numero de paginas e outra seta < 1 2 ... 10 > tipo assim-->
 </div>
 
 <script>
