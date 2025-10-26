@@ -32,7 +32,7 @@ async function denunciarAvaliacao(idAvaliacao) {
 
     Swal.fire({
       icon: resultado.codigo === "SUCESSO" ? "success" : "warning",
-      title: resultado.codigo === "SUCESSO" ? "Denúncia enviada!" : "Ops...",
+      title: resultado. codigo === "SUCESSO" ? "Denúncia enviada!" : "Ops...",
       text: resultado.mensagem
     });
   } catch (erro) {

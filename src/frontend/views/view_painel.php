@@ -29,7 +29,7 @@ $outrosCategoria = executarConsulta("
 $avaliacoesUsuario = [];
 if ($logado) {
     $avaliacoesUsuario = executarConsulta("
-        SELECT a.id_avaliacao, c.nome_categoria, a.conteudo, a.nota, a.data_avaliacao
+        SELECT a.id_avaliacao, c.nome_categoria, a.conteudo, a.nota, a.emoji, a.data_avaliacao
         FROM avaliacoes a
         JOIN categorias_avaliacao c ON a.id_categoria = c.id_categoria
         WHERE a.id_usuario = ?
@@ -62,6 +62,7 @@ $sqlAvaliacoes = "
            c.nome_categoria,
            a.conteudo,
            a.nota,
+           a.emoji,
            a.data_avaliacao,
            u.nome AS nome_usuario
     FROM avaliacoes a
@@ -142,24 +143,70 @@ if ($logado) {
       </select>
     </div>
 
-    <!-- Nota -->
-    <div class="flex flex-col">
-      <label class="text-gray-700 font-semibold mb-2">Nota do serviço (1 a 5)</label>
-      <select name="nota" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-green-400 focus:border-transparent transition">
-        <option value="">Selecione</option>
-        <?php for($i=1; $i<=5; $i++): ?>
-          <option value="<?= $i ?>"><?= $i ?> - <?php 
-            echo match($i) {
-              1 => 'Péssimo',
-              2 => 'Ruim',
-              3 => 'Regular',
-              4 => 'Bom',
-              5 => 'Excelente',
-            };
-          ?></option>
-        <?php endfor; ?>
-      </select>
+<div class="flex flex-col md:flex-row gap-6 mt-3">
+  <!-- Coluna 1: Tipo de Avaliação -->
+  <div class="flex-1">
+    <label class="text-gray-700 font-semibold mb-2 block">Escolha o tipo de avaliação</label>
+    <select name="tipo_avaliacao" id="tipoAvaliacao" required
+      class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition">
+      <option value="">Selecione</option>
+      <option value="estrela">Estrela (1 a 5)</option>
+      <option value="emoji">Emoji</option>
+    </select>
+  </div>
+
+  <!-- Coluna 2: Nota (estrela ou emoji) -->
+  <div class="flex-1">
+<!-- Nota por Estrela -->
+<div class="flex flex-col items-center" id="notaEstrela" style="display:none;">
+  <label class="text-gray-700 font-semibold mb-2 text-center">Nota do serviço</label>
+  <div class="flex gap-2 justify-center">
+    <!-- Todas começam vazias -->
+    <button type="button" class="estrela-btn transition-transform duration-200" data-valor="1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </button>
+    <button type="button" class="estrela-btn transition-transform duration-200" data-valor="2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </button>
+    <button type="button" class="estrela-btn transition-transform duration-200" data-valor="3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </button>
+    <button type="button" class="estrela-btn transition-transform duration-200" data-valor="4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </button>
+    <button type="button" class="estrela-btn transition-transform duration-200" data-valor="5">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+    </button>
+  </div>
+  <input type="hidden" name="nota" id="notaSelecionada">
+</div>
+
+
+
+    <!-- Nota por Emoji -->
+    <div class="flex flex-col items-center" id="notaEmoji" style="display:none;">
+      <label class="text-gray-700 font-semibold mb-2 text-center">Escolha um emoji</label>
+      <div class="flex gap-4 justify-center">
+        <button type="button" class="emoji-btn text-3xl transition-transform duration-200">😠</button>
+        <button type="button" class="emoji-btn text-3xl transition-transform duration-200">😐</button>
+        <button type="button" class="emoji-btn text-3xl transition-transform duration-200">😊</button>
+        <button type="button" class="emoji-btn text-3xl transition-transform duration-200">😃</button>
+        <button type="button" class="emoji-btn text-3xl transition-transform duration-200">😍</button>
+      </div>
+      <input type="hidden" name="emoji" id="emojiSelecionado">
     </div>
+  </div>
+</div>
 
     <!-- Comentário -->
     <div class="flex flex-col">
@@ -177,7 +224,12 @@ if ($logado) {
   <!-- Dropdown Minhas Avaliações -->
   <h1 id="toggleAvaliacoes" class="flex justify-between items-center cursor-pointer text-2xl font-bold text-black mt-6 hover:text-gray-800 transition">
       Minhas Avaliações
-      <span id="iconSeta" class="text-xl">▼</span>
+      <span id="iconSeta" class="inline-block w-5 h-5 transition-transform duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </span>
+
   </h1>
 
   <div id="listaAvaliacoes" class="mt-4 hidden space-y-3">
@@ -187,8 +239,23 @@ if ($logado) {
           <?php foreach($avaliacoesUsuario as $av): ?>
               <div class="border border-gray-300 rounded-xl p-4 flex justify-between items-start bg-gray-50">
                   <div>
-                      <p class="font-semibold"><?= htmlspecialchars($av['nome_categoria']) ?> - Nota: <?= $av['nota'] ?></p>
-                      <p class="text-gray-700"><?= htmlspecialchars($av['conteudo']) ?></p>
+                      <p class="font-semibold flex items-center gap-1">
+                          <?= htmlspecialchars($av['nome_categoria']) ?> - Nota:
+
+                          <?php if(!empty($av['nota'])): ?>
+                              <?php for($i=1; $i<=5; $i++): ?>
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 <?= $i <= $av['nota'] ? 'text-yellow-400' : 'text-gray-300' ?>" fill="<?= $i <= $av['nota'] ? 'currentColor' : 'none' ?>" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                  </svg>
+                              <?php endfor; ?>
+                          <?php elseif(!empty($av['emoji'])): ?>
+                              <span class="text-2xl"><?= htmlspecialchars($av['emoji']) ?></span>
+                          <?php endif; ?>
+                      </p>
+
+                      <p class="text-gray-700 mt-1"><?= htmlspecialchars($av['conteudo']) ?></p>
+
+
                       <p class="text-gray-400 text-sm"><?= date('d/m/Y H:i', strtotime($av['data_avaliacao'])) ?></p>
                   </div>
                   <div class="flex flex-col gap-2 ml-4">
@@ -210,24 +277,31 @@ if ($logado) {
     Todas as Avaliações
   </h2>
 
-  <div id="todasAvaliacoes" class="space-y-4 h-[550px] overflow-y-auto pr-2">
+<div id="todasAvaliacoes" class="space-y-4 h-[550px] overflow-y-auto pr-2">
     <?php if (empty($todasAvaliacoes)): ?>
-      <p class="text-gray-600 text-center">Nenhuma avaliação encontrada.</p>
+        <p class="text-gray-600 text-center">Nenhuma avaliação encontrada.</p>
     <?php else: ?>
-
         <?php foreach ($todasAvaliacoes as $av): ?>
             <?php 
                 $jaDenunciada = $logado && in_array($av['id_avaliacao'], $denunciasUsuario);
                 $classeFundo = $jaDenunciada ? 'bg-red-100 border-red-500' : 'bg-gray-50 border-gray-300';
             ?>
-            <div class="border rounded-xl p-4 <?= $classeFundo ?> shadow-sm hover:shadow-md transition">
+            <div class="border <?= $classeFundo ?> rounded-xl p-4 shadow-sm hover:shadow-md transition">
                 <div class="flex justify-between items-start">
                     <div>
-                        <p class="font-semibold text-lg text-gray-800">
-                            <?= htmlspecialchars($av['nome_categoria']) ?> - 
-                            <span class="text-yellow-500">★ <?= $av['nota'] ?></span>
+                        <p class="font-semibold text-lg text-gray-800 flex items-center gap-1">
+                            <?= htmlspecialchars($av['nome_categoria']) ?> - Nota: 
+                            <?php if(!empty($av['nota'])): ?>
+                                <?php for($i=1; $i<=5; $i++): ?>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 <?= $i <= $av['nota'] ? 'text-yellow-400' : 'text-gray-300' ?>" fill="<?= $i <= $av['nota'] ? 'currentColor' : 'none' ?>" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                                    </svg>
+                                <?php endfor; ?>
+                            <?php elseif(!empty($av['emoji'])): ?>
+                                <span class="text-2xl"><?= htmlspecialchars($av['emoji']) ?></span>
+                            <?php endif; ?>
                         </p>
-                        <p class="text-gray-700 mt-1"><?= htmlspecialchars($av['conteudo']) ?></p>
+                        <p class="text-gray-700 mt-1"><?= htmlspecialchars($av['conteudo'] ?? '') ?></p>
                         <p class="text-gray-500 text-sm mt-1">
                             Por: <?= htmlspecialchars($av['nome_usuario'] ?? 'Anônimo') ?> |
                             <?= date('d/m/Y H:i', strtotime($av['data_avaliacao'])) ?>
@@ -245,9 +319,9 @@ if ($logado) {
                 </div>
             </div>
         <?php endforeach; ?>
-
     <?php endif; ?>
-  </div>
+</div>
+
 <?php if ($totalPaginas > 1): ?>
 <div class="flex justify-center items-center mt-4 space-x-2">
     <!-- Ir para primeira página -->
@@ -283,6 +357,7 @@ if ($logado) {
   <!-- quero adicionar aqui uma paginação, entao seria tipo uma seta o numero de paginas e outra seta < 1 2 ... 10 > tipo assim-->
 </div>
 
+<script src="../js/avaliacao.js"></script>
 <script src="../js/denuncia.js"></script>
 
 <script>
@@ -302,15 +377,27 @@ form.addEventListener('submit', async (e) => {
     });
     const resultado = await resposta.json();
 
-    if (resultado.codigo === 'SUCESSO') {
-      Swal.fire({
-        icon: 'success',
-        title: 'Obrigado!',
-        text: resultado.mensagem,
-        timer: 2000,
-        showConfirmButton: false
-      }).then(() => form.reset());
-    } else {
+if (resultado.codigo === 'SUCESSO') {
+  Swal.fire({
+    icon: 'success',
+    title: 'Obrigado!',
+    text: resultado.mensagem,
+    timer: 2000,
+    showConfirmButton: false
+  });
+
+  form.reset();
+  inputNota.value = '';
+  inputEmoji.value = '';
+  botoesEstrela.forEach(b => {
+    const svg = b.querySelector('svg');
+    svg.setAttribute('fill', 'none');
+    svg.classList.remove('text-yellow-400');
+    svg.classList.add('text-gray-300');
+  });
+  botoesEmoji.forEach(b => b.classList.remove('scale-125', 'ring-4', 'ring-yellow-400'));
+}
+else {
       Swal.fire({
         icon: 'warning',
         title: 'Ops...',
@@ -328,14 +415,15 @@ form.addEventListener('submit', async (e) => {
 });
 
 // Dropdown Avaliações
-const toggle = document.getElementById('toggleAvaliacoes');
-const lista = document.getElementById('listaAvaliacoes');
-const seta = document.getElementById('iconSeta');
+const toggleAvaliacoes = document.getElementById('toggleAvaliacoes');
+const listaAvaliacoes = document.getElementById('listaAvaliacoes');
+const iconSeta = document.getElementById('iconSeta');
 
-toggle.addEventListener('click', () => {
-    lista.classList.toggle('hidden');
-    seta.textContent = lista.classList.contains('hidden') ? '▼' : '▲';
+toggleAvaliacoes.addEventListener('click', () => {
+  listaAvaliacoes.classList.toggle('hidden');
+  iconSeta.classList.toggle('rotate-180'); // gira a seta
 });
+
 
 // Funções exemplo para editar/remover (implemente AJAX real)
 function editarAvaliacao(id) {
@@ -346,6 +434,60 @@ function removerAvaliacao(id) {
         alert("Função de remover avaliação #" + id);
     }
 }
+</script>
+<script>
+const tipoSelect = document.getElementById('tipoAvaliacao');
+const notaEstrelaDiv = document.getElementById('notaEstrela');
+const notaEmojiDiv = document.getElementById('notaEmoji');
+
+tipoSelect.addEventListener('change', () => {
+  if (tipoSelect.value === 'estrela') {
+    notaEstrelaDiv.style.display = 'flex';
+    notaEmojiDiv.style.display = 'none';
+  } else if (tipoSelect.value === 'emoji') {
+    notaEstrelaDiv.style.display = 'none';
+    notaEmojiDiv.style.display = 'flex';
+  } else {
+    notaEstrelaDiv.style.display = 'none';
+    notaEmojiDiv.style.display = 'none';
+  }
+});
+
+// Emoji selection (mantém o destaque)
+const botoesEmoji = document.querySelectorAll('.emoji-btn');
+const inputEmoji = document.getElementById('emojiSelecionado');
+
+botoesEmoji.forEach(btn => {
+  btn.addEventListener('click', () => {
+    botoesEmoji.forEach(b => b.classList.remove('scale-125', 'ring-4', 'ring-yellow-400'));
+    btn.classList.add('scale-125', 'ring-4', 'ring-yellow-400');
+    inputEmoji.value = btn.textContent;
+  });
+});
+</script>
+<script>
+const botoesEstrela = document.querySelectorAll('.estrela-btn');
+const inputNota = document.getElementById('notaSelecionada');
+
+botoesEstrela.forEach((btn, idx) => {
+  btn.addEventListener('click', () => {
+    inputNota.value = btn.dataset.valor;
+
+    botoesEstrela.forEach((b, i) => {
+      const svg = b.querySelector('svg');
+      if (i < idx + 1) {
+        svg.setAttribute('fill', 'currentColor'); // estrela cheia
+        svg.classList.remove('text-gray-300');
+        svg.classList.add('text-yellow-400');
+      } else {
+        svg.setAttribute('fill', 'none'); // estrela vazia
+        svg.classList.remove('text-yellow-400');
+        svg.classList.add('text-gray-300');
+      }
+    });
+  });
+});
+
 </script>
 <?php if ($logado && isset($_SESSION['expira'])): ?>
 <script>

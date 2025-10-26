@@ -6,7 +6,9 @@ include_once __DIR__ . '/sessao.php';
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $nota = $_POST['nota'] ?? '';
+    $tipo = $_POST['tipo_avaliacao'] ?? null; // novo
+    $nota = $tipo === 'estrela' ? $_POST['nota'] ?? null : null;
+    $emoji = $tipo === 'emoji' ? $_POST['emoji'] ?? null : null; // novo
     $comentario = trim($_POST['conteudo'] ?? '');
     $id_categoria = $_POST['id_categoria'] ?? null;
 
@@ -27,23 +29,18 @@ try {
         exit;
     }
 
-    $categoriaExistente = executarConsulta(
-        "SELECT COUNT(*) FROM categorias_avaliacao WHERE id_categoria = ?",
-        [$id_categoria]
-    )->fetchColumn();
-
-    if (!$categoriaExistente) {
+    if ($tipo === 'estrela' && !in_array($nota, ['1','2','3','4','5'])) {
         echo json_encode([
-            "codigo" => "CATEGORIA_INVALIDA",
-            "mensagem" => "Categoria selecionada não existe."
+            "codigo" => "NOTA_INVALIDA",
+            "mensagem" => "Escolha uma nota válida de 1 a 5."
         ]);
         exit;
     }
 
-    if (!in_array($nota, ['1','2','3','4','5'])) {
+    if ($tipo === 'emoji' && empty($emoji)) {
         echo json_encode([
-            "codigo" => "NOTA_INVALIDA",
-            "mensagem" => "Escolha uma nota válida de 1 a 5."
+            "codigo" => "EMOJI_INVALIDO",
+            "mensagem" => "Escolha um emoji válido."
         ]);
         exit;
     }
@@ -69,13 +66,12 @@ try {
         }
     }
 
-    // Inserir avaliação
+    // Inserir avaliação (agora com emoji)
     executarConsulta("
-        INSERT INTO avaliacoes (id_usuario, id_categoria, conteudo, nota, anonima, ip_usuario, data_avaliacao)
-        VALUES (?, ?, ?, ?, ?, ?, NOW())
-    ", [$usuarioId, $id_categoria, $comentario, $nota, $anonima, $ipHash]);
+        INSERT INTO avaliacoes (id_usuario, id_categoria, conteudo, nota, emoji, anonima, ip_usuario, data_avaliacao)
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+    ", [$usuarioId, $id_categoria, $comentario, $nota, $emoji, $anonima, $ipHash]);
 
-    // Mensagem diferenciada para anônimos
     echo json_encode([
         "codigo" => "SUCESSO",
         "mensagem" => $anonima ? "Avaliação enviada!" : "Sua avaliação foi registrada com sucesso!"
