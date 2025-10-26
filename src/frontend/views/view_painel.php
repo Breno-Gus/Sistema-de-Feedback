@@ -357,6 +357,16 @@ if ($logado) {
   <!-- quero adicionar aqui uma paginação, entao seria tipo uma seta o numero de paginas e outra seta < 1 2 ... 10 > tipo assim-->
 </div>
 
+<a href="../../backend/export/export_csv.php" 
+   class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+   Exportar CSV
+</a>
+<a href="../../backend/export/export_pdf.php" 
+   class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+   Exportar PDF
+</a>
+
+
 <script src="../js/avaliacao.js"></script>
 <script src="../js/denuncia.js"></script>
 
